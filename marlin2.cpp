@@ -2,12 +2,26 @@
 #include "esphome/core/log.h"
 
 namespace esphome {
+    static const char *TAG = "marlin2";
 
-static const char *TAG = "marlin2";
+    void Marlin2::add_sensor(const std::string& sName, sensor::Sensor *sens) {
+        sensors.push_back({sName, sens});
+    }
+
+    sensor::Sensor* Marlin2::find_sensor(std::string key) {
+        for (const auto& pair : sensors) {
+            if (key == std::string(pair.first)) { // Convert char* to std::string for comparison
+                return pair.second;
+            }
+        }
+        return nullptr; // Return nullptr if no match is found
+    }
 
     void Marlin2::setup() {
         MarlinOutput.reserve(256);
         MarlinOutput = "";
+
+        MarlinTime.reserve(32);
 
         ESP_LOGD(TAG, "M155 S10");
 
@@ -54,12 +68,21 @@ static const char *TAG = "marlin2";
             MarlinOutput.find("ok T:")  == 0 ||
             MarlinOutput.find(" ok T:") == 0
         ) {
-            float ext_temperature, ext_set_temperature, bed_temperature, bed_set_tempertaure;
-            if (process_temp_msg(&ext_temperature, &ext_set_temperature, &bed_temperature, &bed_set_tempertaure) != 0)  {
-                //bed_temperature_sensor->publish_state(bed_temperature);
-                // bed_temperature->publish_state(bed_set_tempertaure);
-                //ext_temperature_sensor->publish_state(ext_temperature);
-                // ext_temperature->publish_state(ext_set_temperature);
+            float ext_temperature, ext_set_temperature, bed_temperature, bed_set_temperature;
+            if (process_temp_msg(&ext_temperature, &ext_set_temperature, &bed_temperature, &bed_set_temperature) != 0)  {
+                
+                if (find_sensor("bed_temperature") != nullptr)
+                    find_sensor("bed_temperature")->publish_state(bed_temperature);
+                
+                if (find_sensor("bed_set_temperature") != nullptr)
+                    find_sensor("bed_set_temperature")->publish_state(bed_set_temperature);
+                
+                if (find_sensor("ext_temperature") != nullptr)
+                    find_sensor("ext_temperature")->publish_state(ext_temperature);
+                
+                if (find_sensor("ext_set_temperature") != nullptr)
+                    find_sensor("ext_set_temperature")->publish_state(ext_set_temperature);
+
                 ESP_LOGD(TAG, "Bed Temperature=%.1f°C Ext Temperature=%.1f°C ", bed_temperature, ext_temperature);
             }
 
@@ -70,9 +93,12 @@ static const char *TAG = "marlin2";
 
         //Parse Progress of the print
         if(MarlinOutput.find("SD printing byte") == 0 ) {
-            float progress = process_progress_msg();
-            //print_progress_sensor->publish_state(progress);
-            ESP_LOGD(TAG, "progress=%.1f", progress);
+            float print_progress = process_progress_msg();
+
+            if (find_sensor("print_progress") != nullptr)
+                find_sensor("print_progress")->publish_state(print_progress);
+
+            ESP_LOGD(TAG, "progress=%.1f", print_progress);
 
             //reset string for next line
             MarlinOutput="";
@@ -85,6 +111,13 @@ static const char *TAG = "marlin2";
             unsigned long current=0, remaining=0;
 
             if (process_print_time_msg(&d, &h, &m, &current, &remaining) != 0)  {
+                if (find_sensor("print_time") != nullptr)
+                    find_sensor("print_time")->publish_state(print_time)
+
+                if (find_sensor("print_time_remaining") != nullptr)
+                    find_sensor("print_time_remaining")->publish_state(print_time_remaining)
+
+                ESP_LOGD(TAG, "time=%.1f remaining=%.1f", current, remaining);
             }
 
             //reset string for next line
@@ -133,6 +166,27 @@ static const char *TAG = "marlin2";
     }
 
     int Marlin2::process_print_time_msg(int* d, int* h, int* m, unsigned long* current, unsigned long* remaining){
+        MarlinTime = MarlinOutput.substr(16);
+            
+        ESP_LOGD(TAG,MarlinTime.c_str());
+        
+        if (sscanf(MarlinTime.c_str() ,"%dd %dh %dm %ds", &d, &h, &m, &s)!=4)  {
+            d=0;
+            if (sscanf(MarlinTime.c_str() ,"%dh %dm %ds", &h, &m, &s)!=3)  {
+                d=0; h=0;
+                if (sscanf(MarlinTime.c_str() ,"%dm %ds", &m, &s)!=2)  {
+                    d=0; h=0; m=0;
+                    if (sscanf(MarlinTime.c_str() ,"%ds", &s)!=1)  {
+                        MarlinOutput="";
+                        return;
+                    }
+                }
+            }
+        }
+        
+        current = d*24*60*60 + h*60*60 + m*60 + s;
+            
+
         return 0;
     }
 

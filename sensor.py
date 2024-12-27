@@ -22,9 +22,14 @@ CODEOWNERS = ["@jonatanrek"]
 DEPENDENCIES = ['uart']
 
 CONF_BED_TEMPERATURE = "bed_temperature"
-CONF_EXT_TEMPERATURE = "ext_temperature"
-CONF_PROGRESS = "progress"
+CONF_BED_SET_TEMPERATURE = "bed_set_temperature"
 
+CONF_EXT_TEMPERATURE = "ext_temperature"
+CONF_EXT_SET_TEMPERATURE = "ext_set_temperature"
+
+CONF_PRINT_PROGRESS = "print_progress"
+CONF_PRINT_TIME = "print_time"
+CONF_PRINT_TIME_REMAINING = "print_time_remaining"
 
 Marlin2 = cg.esphome_ns.class_('Marlin2', cg.Component, sensor.Sensor, uart.UARTDevice)
 
@@ -37,31 +42,49 @@ CONFIG_SCHEMA = uart.UART_DEVICE_SCHEMA.extend(
             device_class=DEVICE_CLASS_TEMPERATURE,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
+        cv.Optional(CONF_BED_SET_TEMPERATURE): sensor.sensor_schema(
+            unit_of_measurement=UNIT_CELSIUS,
+            accuracy_decimals=1,
+            device_class=DEVICE_CLASS_TEMPERATURE,
+            state_class=STATE_CLASS_MEASUREMENT,
+        ),
         cv.Optional(CONF_EXT_TEMPERATURE): sensor.sensor_schema(
             unit_of_measurement=UNIT_CELSIUS,
             accuracy_decimals=1,
             device_class=DEVICE_CLASS_TEMPERATURE,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        cv.Optional(CONF_PROGRESS): sensor.sensor_schema(
+        cv.Optional(CONF_EXT_SET_TEMPERATURE): sensor.sensor_schema(
             unit_of_measurement=UNIT_CELSIUS,
             accuracy_decimals=1,
             device_class=DEVICE_CLASS_TEMPERATURE,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
+        cv.Optional(CONF_PRINT_PROGRESS): sensor.sensor_schema(
+            unit_of_measurement=UNIT_PERCENT,
+            accuracy_decimals=1,
+            state_class=STATE_CLASS_MEASUREMENT,
+        ),
+        cv.Optional(CONF_PRINT_TIME): sensor.sensor_schema(
+            unit_of_measurement=UNIT_PERCENT,
+            accuracy_decimals=1,
+            device_class=DEVICE_CLASS_DURATION,
+            state_class=STATE_CLASS_MEASUREMENT,
+        ),
+        cv.Optional(CONF_PRINT_TIME_REMAINING): sensor.sensor_schema(
+            unit_of_measurement=UNIT_PERCENT,
+            accuracy_decimals=1,
+            device_class=DEVICE_CLASS_DURATION,
+            state_class=STATE_CLASS_MEASUREMENT,
+        ),
     }
-)
+).extend(cv.polling_component_schema("15s"))
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
-
-    if CONF_BED_TEMPERATURE in config:
-        await sensor.new_sensor(config[CONF_BED_TEMPERATURE])
-    
-    if CONF_EXT_TEMPERATURE in config:
-        await sensor.new_sensor(config[CONF_EXT_TEMPERATURE])
-
-    if CONF_PROGRESS in config:
-        await sensor.new_sensor(config[CONF_PROGRESS])
+    for sName in [CONF_BED_TEMPERATURE, CONF_BED_SET_TEMPERATURE, CONF_EXT_TEMPERATURE, CONF_EXT_SET_TEMPERATURE, CONF_PRINT_PROGRESS, CONF_PRINT_TIME, CONF_PRINT_TIME_REMAINING]:
+        if sName in config:
+            sens = await sensor.new_sensor(config[sName])
+            cg.add(var.add_sensor(sName,sens))    
