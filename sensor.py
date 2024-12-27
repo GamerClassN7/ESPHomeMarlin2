@@ -3,7 +3,19 @@ import esphome.config_validation as cv
 from esphome import automation
 from esphome.components import uart
 from esphome.components import sensor
-from esphome.const import CONF_ID, CONF_INDEX, CONF_SENSORS, CONF_HUMIDITY, CONF_MODEL, CONF_PIN, CONF_TEMPERATURE, STATE_CLASS_MEASUREMENT, UNIT_CELSIUS, UNIT_PERCENT, DEVICE_CLASS_TEMPERATURE
+from esphome.const import (
+    CONF_ID, 
+    CONF_INDEX, 
+    CONF_SENSORS, 
+    CONF_HUMIDITY, 
+    CONF_MODEL, 
+    CONF_PIN, 
+    CONF_TEMPERATURE, 
+    STATE_CLASS_MEASUREMENT, 
+    UNIT_CELSIUS, 
+    UNIT_PERCENT, 
+    DEVICE_CLASS_TEMPERATURE
+)
 
 CODEOWNERS = ["@jonatanrek"]
 
@@ -11,9 +23,8 @@ DEPENDENCIES = ['uart']
 
 CONF_BED_TEMPERATURE = "bed_temperature"
 
-serial_ns = cg.esphome_ns.namespace('serial')
-
-Marlin2 = serial_ns.class_('Marlin2', cg.Component, sensor.Sensor, uart.UARTDevice)
+marlin_ns = cg.esphome_ns.namespace('marlin2')
+Marlin2 = marlin_ns.class_('Marlin2', cg.Component, sensor.Sensor, uart.UARTDevice)
 
 CONFIG_SCHEMA = uart.UART_DEVICE_SCHEMA.extend(
     {
