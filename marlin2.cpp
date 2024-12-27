@@ -22,6 +22,7 @@ namespace esphome {
         MarlinOutput = "";
 
         MarlinTime.reserve(32);
+        PrinterState.reserve(32);
 
         ESP_LOGD(TAG, "M155 S10");
 
@@ -86,6 +87,19 @@ namespace esphome {
                 ESP_LOGD(TAG, "Bed Temperature=%.1f°C Ext Temperature=%.1f°C ", bed_temperature, ext_temperature);
             }
 
+            if(bed_set_temperature==0.0 && ext_set_temperature==0.0)  {
+                    if(ext_temperature < 32.0 && bed_temperature < 32.0)         //TODO define constants for these
+                        if (find_sensor("printer_status") != nullptr)
+                            find_sensor("printer_status")->publish_state('IDLE');
+                    else if(ext_temperature < 150.0 && bed_temperature < 55.0)
+                        if (find_sensor("printer_status") != nullptr)
+                            find_sensor("printer_status")->publish_state('COOLING');
+                }
+                if(bed_set_temperature!=0.0 || ext_set_temperature!=0.0)  {
+                    if (find_sensor("printer_status") != nullptr)
+                        find_sensor("printer_status")->publish_state('PREHEATING');
+                }
+
             //reset string for next line
             MarlinOutput="";
             return;
@@ -124,6 +138,42 @@ namespace esphome {
             MarlinOutput="";
             return;
         }
+
+        //Print Finished
+        if(MarlinOutput.find("Done printing") != std::string::npos) {                
+            if (find_sensor("printer_status") != nullptr)
+                find_sensor("printer_status")->publish_state('FINISHED');
+
+            ESP_LOGD(TAG, "Print Finished");
+
+            //reset string for next line
+            MarlinOutput="";
+            return;
+        }
+
+        //Print Paused
+        if(MarlinOutput.find("Printer halted") != std::string::npos) {                
+            if (find_sensor("printer_status") != nullptr)
+                find_sensor("printer_status")->publish_state('PAUSED');
+
+            ESP_LOGD(TAG, "Print Finished");
+
+            //reset string for next line
+            MarlinOutput="";
+            return;
+        }
+
+        //Print Stoped
+        if(MarlinOutput.find("Print Aborted") != std::string::npos) {                
+            if (find_sensor("printer_status") != nullptr)
+                find_sensor("printer_status")->publish_state('ABOARTED');
+
+            ESP_LOGD(TAG, "Print Finished");
+
+            //reset string for next line
+            MarlinOutput="";
+            return;
+        } 
 
         ESP_LOGD(TAG, "#%s#",MarlinOutput.c_str());        
         MarlinOutput="";

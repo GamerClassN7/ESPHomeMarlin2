@@ -21,6 +21,8 @@ class Marlin2 : public PollingComponent ,  public uart::UARTDevice {
         int process_print_time_msg(int* d, int* h, int* m, unsigned long* current, unsigned long* remaining);
         
         std::string MarlinOutput;
+        std::string PrinterState;
+        
         std::vector<std::pair<std::string, sensor::Sensor *>> sensors;
     
     private:

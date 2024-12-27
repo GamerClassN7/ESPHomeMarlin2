@@ -11,9 +11,10 @@ from esphome.const import (
     CONF_MODEL, 
     CONF_PIN, 
     CONF_TEMPERATURE, 
-    STATE_CLASS_MEASUREMENT, 
     UNIT_CELSIUS, 
     UNIT_PERCENT, 
+    UNIT_SECONDS, 
+    STATE_CLASS_MEASUREMENT, 
     DEVICE_CLASS_TEMPERATURE
 )
 
@@ -30,6 +31,8 @@ CONF_EXT_SET_TEMPERATURE = "ext_set_temperature"
 CONF_PRINT_PROGRESS = "print_progress"
 CONF_PRINT_TIME = "print_time"
 CONF_PRINT_TIME_REMAINING = "print_time_remaining"
+
+CONF_PRINTER_STATUS = "printer_status"
 
 Marlin2 = cg.esphome_ns.class_('Marlin2', cg.Component, sensor.Sensor, uart.UARTDevice)
 
@@ -66,15 +69,18 @@ CONFIG_SCHEMA = uart.UART_DEVICE_SCHEMA.extend(
             state_class=STATE_CLASS_MEASUREMENT,
         ),
         cv.Optional(CONF_PRINT_TIME): sensor.sensor_schema(
-            unit_of_measurement=UNIT_PERCENT,
+            unit_of_measurement=UNIT_SECONDS,
             accuracy_decimals=1,
             device_class=DEVICE_CLASS_DURATION,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
         cv.Optional(CONF_PRINT_TIME_REMAINING): sensor.sensor_schema(
-            unit_of_measurement=UNIT_PERCENT,
+            unit_of_measurement=UNIT_SECONDS,
             accuracy_decimals=1,
             device_class=DEVICE_CLASS_DURATION,
+            state_class=STATE_CLASS_MEASUREMENT,
+        ),
+        cv.Optional(CONF_PRINTER_STATUS): sensor.sensor_schema(
             state_class=STATE_CLASS_MEASUREMENT,
         ),
     }
