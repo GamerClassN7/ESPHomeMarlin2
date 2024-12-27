@@ -3,6 +3,7 @@ import esphome.config_validation as cv
 from esphome import automation
 from esphome.components import uart
 from esphome.components import sensor
+# from esphome.components import text_sensor
 from esphome.const import (
     CONF_ID, 
     CONF_INDEX, 
@@ -33,7 +34,7 @@ CONF_PRINT_PROGRESS = "print_progress"
 CONF_PRINT_TIME = "print_time"
 CONF_PRINT_TIME_REMAINING = "print_time_remaining"
 
-CONF_PRINTER_STATUS = "printer_status"
+# CONF_PRINTER_STATUS = "printer_status"
 
 Marlin2 = cg.esphome_ns.class_('Marlin2', cg.Component, sensor.Sensor, uart.UARTDevice)
 
@@ -81,9 +82,7 @@ CONFIG_SCHEMA = uart.UART_DEVICE_SCHEMA.extend(
             device_class=DEVICE_CLASS_DURATION,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        cv.Optional(CONF_PRINTER_STATUS): sensor.sensor_schema(
-            state_class=STATE_CLASS_MEASUREMENT,
-        ),
+        # cv.Optional(CONF_PRINTER_STATUS): text_sensor.text_sensor_schema(),
     }
 ).extend(cv.polling_component_schema("15s"))
 
@@ -96,7 +95,7 @@ async def to_code(config):
             sens = await sensor.new_sensor(config[sName])
             cg.add(var.add_sensor(sName,sens))    
 
-    for sName in [CONF_PRINTER_STATUS]:
-        if sName in config:
-            sens = await sensor.new_text_sensor(config[sName])
-            cg.add(var.add_textsensor(sName,sens))    
+    # for sName in [CONF_PRINTER_STATUS]:
+    #     if sName in config:
+    #         sens = await sensor.new_text_sensor(config[sName])
+    #         cg.add(var.add_text_sensor(sName,sens))    

@@ -17,6 +17,19 @@ namespace esphome {
         return nullptr; // Return nullptr if no match is found
     }
 
+    // void Marlin2::add_text_sensor(const std::string& sName, text_sensor *sens) {
+    //     text_sensors.push_back({sName, sens});
+    // }
+
+    // text_sensor* Marlin2::find_text_sensor(std::string key) {
+    //     for (const auto& pair : text_sensors) {
+    //         if (key == std::string(pair.first)) { // Convert char* to std::string for comparison
+    //             return pair.second;
+    //         }
+    //     }
+    //     return nullptr; // Return nullptr if no match is found
+    // }
+
     void Marlin2::setup() {
         MarlinOutput.reserve(256);
         MarlinOutput = "";
@@ -87,18 +100,19 @@ namespace esphome {
                 ESP_LOGD(TAG, "Bed Temperature=%.1f°C Ext Temperature=%.1f°C ", bed_temperature, ext_temperature);
             }
 
-            if(bed_set_temperature==0.0 && ext_set_temperature==0.0)  {
-                    if(ext_temperature < 32.0 && bed_temperature < 32.0)         //TODO define constants for these
-                        if (find_sensor("printer_status") != nullptr)
-                            find_sensor("printer_status")->publish_state("IDLE");
-                    else if(ext_temperature < 150.0 && bed_temperature < 55.0)
-                        if (find_sensor("printer_status") != nullptr)
-                            find_sensor("printer_status")->publish_state("COOLING");
-                }
-                if(bed_set_temperature!=0.0 || ext_set_temperature!=0.0)  {
-                    if (find_sensor("printer_status") != nullptr)
-                        find_sensor("printer_status")->publish_state("PREHEATING");
-                }
+            // if(bed_set_temperature==0.0 && ext_set_temperature==0.0)  {
+            //         if(ext_temperature < 32.0 && bed_temperature < 32.0)         //TODO define constants for these
+            //             //if (find_text_sensor("printer_status") != nullptr)
+            //                 //find_text_sensor("printer_status")->publish_state("IDLE");
+            //         else if(ext_temperature < 150.0 && bed_temperature < 55.0)
+            //             //if (find_text_sensor("printer_status") != nullptr)
+            //                 //find_text_sensor("printer_status")->publish_state("COOLING");
+            //     }
+            //     if(bed_set_temperature!=0.0 || ext_set_temperature!=0.0)  {
+            //         //if (find_text_sensor("printer_status") != nullptr)
+            //             //find_text_sensor("printer_status")->publish_state("PREHEATING");
+            //     }
+        
 
             //reset string for next line
             MarlinOutput="";
@@ -121,17 +135,17 @@ namespace esphome {
 
         //Parse Printitme
         if(MarlinOutput.find("echo:Print time: ") == 0) {
-            int d=0, h=0, m=0, s=0;
+            int* d=0, h=0, m=0, s=0;
             unsigned long current=0, remaining=0;
 
-            if (process_print_time_msg(&d, &h, &m, &current, &remaining) != 0)  {
+            if (process_print_time_msg(&d, &h, &m, &s, &current, &remaining) != 0)  {
                 if (find_sensor("print_time") != nullptr)
-                    find_sensor("print_time")->publish_state(print_time)
+                    find_sensor("print_time")->publish_state(current);
 
                 if (find_sensor("print_time_remaining") != nullptr)
-                    find_sensor("print_time_remaining")->publish_state(print_time_remaining)
+                    find_sensor("print_time_remaining")->publish_state(remaining);
 
-                ESP_LOGD(TAG, "time=%.1f remaining=%.1f", current, remaining);
+                ESP_LOGD(TAG, "time=%lu remaining=%lu", current, remaining);
             }
 
             //reset string for next line
@@ -141,8 +155,8 @@ namespace esphome {
 
         //Print Finished
         if(MarlinOutput.find("Done printing") != std::string::npos) {                
-            if (find_sensor("printer_status") != nullptr)
-                find_sensor("printer_status")->publish_state("FINISHED");
+            //if (find_text_sensor("printer_status") != nullptr)
+                //find_text_sensor("printer_status")->publish_state("FINISHED");
 
             ESP_LOGD(TAG, "Print Finished");
 
@@ -153,8 +167,8 @@ namespace esphome {
 
         //Print Paused
         if(MarlinOutput.find("Printer halted") != std::string::npos) {                
-            if (find_sensor("printer_status") != nullptr)
-                find_sensor("printer_status")->publish_state("PAUSED");
+            //if (find_text_sensor("printer_status") != nullptr)
+                //find_text_sensor("printer_status")->publish_state("PAUSED");
 
             ESP_LOGD(TAG, "Print Finished");
 
@@ -165,8 +179,8 @@ namespace esphome {
 
         //Print Stoped
         if(MarlinOutput.find("Print Aborted") != std::string::npos) {                
-            if (find_sensor("printer_status") != nullptr)
-                find_sensor("printer_status")->publish_state("ABOARTED");
+            //if (find_text_sensor("printer_status") != nullptr)
+                //find_text_sensor("printer_status")->publish_state("ABOARTED");
 
             ESP_LOGD(TAG, "Print Finished");
 
@@ -215,7 +229,7 @@ namespace esphome {
         return ((float) current / (float) total) * 100.0;
     }
 
-    int Marlin2::process_print_time_msg(int* d, int* h, int* m, unsigned long* current, unsigned long* remaining){
+    int Marlin2::process_print_time_msg(int d, int h, int m, int s, unsigned long* current, unsigned long* remaining){
         MarlinTime = MarlinOutput.substr(16);
             
         ESP_LOGD(TAG,MarlinTime.c_str());
@@ -234,7 +248,7 @@ namespace esphome {
             }
         }
         
-        current = d*24*60*60 + h*60*60 + m*60 + s;
+        current = static_cast<float>((d*24*60*60) + (h*60*60) + (m*60) + (s));
             
 
         return 0;
