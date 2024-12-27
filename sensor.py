@@ -9,6 +9,8 @@ CODEOWNERS = ["@jonatanrek"]
 
 DEPENDENCIES = ['uart']
 
+CONF_BED_TEMPERATURE = "bed_temperature"
+
 serial_ns = cg.esphome_ns.namespace('serial')
 
 Marlin2 = serial_ns.class_('Marlin2', cg.Component, sensor.Sensor, uart.UARTDevice)
@@ -16,13 +18,11 @@ Marlin2 = serial_ns.class_('Marlin2', cg.Component, sensor.Sensor, uart.UARTDevi
 CONFIG_SCHEMA = uart.UART_DEVICE_SCHEMA.extend(
     {
         cv.GenerateID(): cv.declare_id(Marlin2),
-        cv.Required(CONF_SENSORS): cv.ensure_list(
-            cv.Optional("bed_current"): sensor.sensor_schema(
-                unit_of_measurement=UNIT_CELSIUS,
-                accuracy_decimals=1,
-                device_class=DEVICE_CLASS_TEMPERATURE,
-                state_class=STATE_CLASS_MEASUREMENT,
-            ),
+        cv.Optional(CONF_BED_TEMPERATURE): sensor.sensor_schema(
+            unit_of_measurement=UNIT_CELSIUS,
+            accuracy_decimals=1,
+            device_class=DEVICE_CLASS_TEMPERATURE,
+            state_class=STATE_CLASS_MEASUREMENT,
         ),
     }
 )
@@ -31,7 +31,7 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
-    for conf in config[CONF_SENSORS]:
-        sens = await sensor.new_sensor(conf)
-        index = conf[CONF_INDEX]
-        cg.add(var.add_sensor(index, sens))
+
+    if CONF_BED_TEMPERATURE in config:
+        sens = await sensor.new_sensor(config[CONF_BED_TEMPERATURE])
+        cg.add(var.set_temperature_sensor(sens))
