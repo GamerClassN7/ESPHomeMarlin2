@@ -6,21 +6,26 @@
 
 namespace esphome {
 
-class Marlin2 : public Component,  public uart::UARTDevice {
+class Marlin2 : public PollingComponent ,  public uart::UARTDevice {
     public:
         void setup() override;
         float get_setup_priority() const override { return setup_priority::LATE; }
-        void loop() override;
-        void dump_config() override;
-
-    void add_sensor(int index, sensor::Sensor *sens) {
-        this->sensors_.push_back(std::make_pair(index, sens));
-    }
-
+        void update() override;
+    
     protected:
-        void parse_values_();
-        std::vector<uint8_t> rx_message_;
-        std::vector<std::pair<int, sensor::Sensor *>> sensors_;
+        void process_line();
+        int process_temp_msg(float* ext_temperature, float* ext_set_temperature, float* bed_temperature, float* bed_set_temperature);
+        float process_progress_msg();
+        int process_print_time_msg(int* d, int* h, int* m, unsigned long* current, unsigned long* remaining)
+        std::string MarlinOutput;
+
+        sensor::Sensor *bed_temperature_sensor;
+        sensor::Sensor *ext_temperature_sensor;
+        sensor::Sensor *print_progress_sensor;
+
+    
+    private:
+        unsigned long millisProgress=0;
 };
 
 }  // namespace esphome

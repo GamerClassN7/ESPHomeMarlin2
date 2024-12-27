@@ -9,11 +9,10 @@ Example:
 sensor:
   - platform: serial_csv
     uart_id: my_uart   # optional
-    sensors:
-      - index: 0
-        name: First value
-      - index: 3
-        name: Fourth value
+    bed_temperature:
+      name: Current Bed Temp
+    ext_temperature:
+      name: Current Ext Temp
 ```
 
 

@@ -22,6 +22,9 @@ CODEOWNERS = ["@jonatanrek"]
 DEPENDENCIES = ['uart']
 
 CONF_BED_TEMPERATURE = "bed_temperature"
+CONF_EXT_TEMPERATURE = "ext_temperature"
+CONF_PROGRESS = "progress"
+
 
 Marlin2 = cg.esphome_ns.class_('Marlin2', cg.Component, sensor.Sensor, uart.UARTDevice)
 
@@ -29,6 +32,18 @@ CONFIG_SCHEMA = uart.UART_DEVICE_SCHEMA.extend(
     {
         cv.GenerateID(): cv.declare_id(Marlin2),
         cv.Optional(CONF_BED_TEMPERATURE): sensor.sensor_schema(
+            unit_of_measurement=UNIT_CELSIUS,
+            accuracy_decimals=1,
+            device_class=DEVICE_CLASS_TEMPERATURE,
+            state_class=STATE_CLASS_MEASUREMENT,
+        ),
+        cv.Optional(CONF_EXT_TEMPERATURE): sensor.sensor_schema(
+            unit_of_measurement=UNIT_CELSIUS,
+            accuracy_decimals=1,
+            device_class=DEVICE_CLASS_TEMPERATURE,
+            state_class=STATE_CLASS_MEASUREMENT,
+        ),
+        cv.Optional(CONF_PROGRESS): sensor.sensor_schema(
             unit_of_measurement=UNIT_CELSIUS,
             accuracy_decimals=1,
             device_class=DEVICE_CLASS_TEMPERATURE,
@@ -44,3 +59,9 @@ async def to_code(config):
 
     if CONF_BED_TEMPERATURE in config:
         await sensor.new_sensor(config[CONF_BED_TEMPERATURE])
+    
+    if CONF_EXT_TEMPERATURE in config:
+        await sensor.new_sensor(config[CONF_EXT_TEMPERATURE])
+
+    if CONF_PROGRESS in config:
+        await sensor.new_sensor(config[CONF_PROGRESS])
