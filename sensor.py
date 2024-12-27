@@ -13,17 +13,18 @@ serial_ns = cg.esphome_ns.namespace('serial')
 
 SerialCSV = serial_ns.class_('SerialCSV', cg.Component, sensor.Sensor, uart.UARTDevice)
 
-CONFIG_SCHEMA = cv.Schema(
+CONFIG_SCHEMA = uart.UART_DEVICE_SCHEMA.extend(
     {
-        cv.Optional(CONF_BED_TEMPERATURE): sensor.sensor_schema(
-            unit_of_measurement=UNIT_CELSIUS,
-            accuracy_decimals=1,
-            device_class=DEVICE_CLASS_TEMPERATURE,
-            state_class=STATE_CLASS_MEASUREMENT,
+        cv.GenerateID(): cv.declare_id(SerialCSV),
+        cv.Required(CONF_SENSORS): cv.ensure_list(
+            sensor.SENSOR_SCHEMA.extend(
+                {
+                    cv.Required(CONF_INDEX): cv.positive_int,
+                }
+            )
         ),
     }
-).extend(cv.polling_component_schema("60s"))
-
+)
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
