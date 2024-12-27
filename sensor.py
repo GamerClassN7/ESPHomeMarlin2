@@ -23,8 +23,7 @@ DEPENDENCIES = ['uart']
 
 CONF_BED_TEMPERATURE = "bed_temperature"
 
-marlin_ns = cg.esphome_ns.namespace('marlin2')
-Marlin2 = marlin_ns.class_('Marlin2', cg.Component, sensor.Sensor, uart.UARTDevice)
+Marlin2 = cg.esphome_ns.class_('Marlin2', cg.Component, sensor.Sensor, uart.UARTDevice)
 
 CONFIG_SCHEMA = uart.UART_DEVICE_SCHEMA.extend(
     {
@@ -44,5 +43,4 @@ async def to_code(config):
     await uart.register_uart_device(var, config)
 
     if CONF_BED_TEMPERATURE in config:
-        sens = await sensor.new_sensor(config[CONF_BED_TEMPERATURE])
-        cg.add(var.set_temperature_sensor(sens))
+        await sensor.new_sensor(config[CONF_BED_TEMPERATURE])
