@@ -15,7 +15,8 @@ from esphome.const import (
     UNIT_PERCENT, 
     UNIT_SECOND, 
     STATE_CLASS_MEASUREMENT, 
-    DEVICE_CLASS_TEMPERATURE
+    DEVICE_CLASS_TEMPERATURE,
+    DEVICE_CLASS_DURATION,
 )
 
 CODEOWNERS = ["@jonatanrek"]
@@ -69,13 +70,13 @@ CONFIG_SCHEMA = uart.UART_DEVICE_SCHEMA.extend(
             state_class=STATE_CLASS_MEASUREMENT,
         ),
         cv.Optional(CONF_PRINT_TIME): sensor.sensor_schema(
-            unit_of_measurement=UNIT_SECONDS,
+            unit_of_measurement=UNIT_SECOND,
             accuracy_decimals=1,
             device_class=DEVICE_CLASS_DURATION,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
         cv.Optional(CONF_PRINT_TIME_REMAINING): sensor.sensor_schema(
-            unit_of_measurement=UNIT_SECONDS,
+            unit_of_measurement=UNIT_SECOND,
             accuracy_decimals=1,
             device_class=DEVICE_CLASS_DURATION,
             state_class=STATE_CLASS_MEASUREMENT,
@@ -94,3 +95,8 @@ async def to_code(config):
         if sName in config:
             sens = await sensor.new_sensor(config[sName])
             cg.add(var.add_sensor(sName,sens))    
+
+    for sName in [CONF_PRINTER_STATUS]:
+        if sName in config:
+            sens = await sensor.new_text_sensor(config[sName])
+            cg.add(var.add_textsensor(sName,sens))    
