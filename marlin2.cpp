@@ -121,7 +121,7 @@ namespace esphome {
 
         //Parse Progress of the print
         if(MarlinOutput.find("SD printing byte") == 0 ) {
-            float print_progress = process_progress_msg();
+            print_progress = process_progress_msg();
 
             if (find_sensor("print_progress") != nullptr)
                 find_sensor("print_progress")->publish_state(print_progress);
@@ -138,12 +138,12 @@ namespace esphome {
             double current=0;
             double remaining=0;
 
-            if (process_print_time_msg(&current, &remaining) != 0)  {
+            if (process_print_time_msg(&current, &remaining, print_progress) != 0)  {
                 if (find_sensor("print_time") != nullptr)
                     find_sensor("print_time")->publish_state(current);
 
-        //         if (find_sensor("print_time_remaining") != nullptr)
-        //             find_sensor("print_time_remaining")->publish_state(remaining);
+                if (find_sensor("print_time_remaining") != nullptr)
+                    find_sensor("print_time_remaining")->publish_state(remaining);
 
                 ESP_LOGD(TAG, "time=%f remaining=%f", current, remaining);
             }
@@ -153,17 +153,24 @@ namespace esphome {
             return;
         }
 
-        // //Print Finished
-        // if(MarlinOutput.find("Done printing") != std::string::npos) {                
+        //Print Finished
+        if(MarlinOutput.find("Done printing") != std::string::npos) {                
         //     //if (find_text_sensor("printer_status") != nullptr)
         //         //find_text_sensor("printer_status")->publish_state("FINISHED");
 
-        //     ESP_LOGD(TAG, "Print Finished");
+            ESP_LOGD(TAG, "Print Finished");
+            print_progress = 100;
 
-        //     //reset string for next line
-        //     MarlinOutput="";
-        //     return;
-        // }
+            if (find_sensor("print_progress") != nullptr)
+                find_sensor("print_progress")->publish_state(print_progress);
+
+            if (find_sensor("print_time_remaining") != nullptr)
+                find_sensor("print_time_remaining")->publish_state(0);
+
+            //reset string for next line
+            MarlinOutput="";
+            return;
+        }
 
         // //Print Paused
         // if(MarlinOutput.find("Printer halted") != std::string::npos) {                
@@ -226,10 +233,10 @@ namespace esphome {
             return 0.0;
         }
         
-        return ((float) current / (float) total) * 100.0;
+        return (((float) current * 100.0) / (float) total);
     }
 
-    int Marlin2::process_print_time_msg(double* current, double* remaining){
+    int Marlin2::process_print_time_msg(double* current, double* remaining, float progress){
         MarlinTime = MarlinOutput.substr(16);
         float d = 0, h = 0, m = 0, s = 0; 
         
@@ -249,6 +256,11 @@ namespace esphome {
         }
 
         *current = round(((d)*24*60*60) + ((h)*60*60) + ((m)*60) + (s));
+
+        if(progress != 0.0 && progress != 100.0) {
+            *remaining = ((100 * *current) / progress);
+        }           
+    
         return 1;
     }
 
