@@ -143,7 +143,7 @@ namespace esphome {
             unsigned long current=0;
             unsigned long remaining=0;
 
-            if (process_print_time_msg(d, h, m, s, current, remaining) != 0)  {
+            if (process_print_time_msg(&d, &h, &m, &s, &current, &remaining) != 0)  {
                 if (find_sensor("print_time") != nullptr)
                     find_sensor("print_time")->publish_state(current);
 
@@ -246,17 +246,14 @@ namespace esphome {
                 if (sscanf(MarlinTime.c_str() ,"%fm %fs", m, s)!=2)  {
                     d=0; h=0; m=0;
                     if (sscanf(MarlinTime.c_str() ,"%fs", s)!=1)  {
-                        MarlinOutput="";
-                        return;
+                        return 0;
                     }
                 }
             }
         }
-        
-        current = ((d)*24*60*60) + ((h)*60*60) + ((m)*60) + (s);
-            
 
-        return 1;
+        current = ((*d)*24*60*60) + ((*h)*60*60) + ((*m)*60) + (*s);
+         return 1;
     }
 
 }  // namespace esphome
