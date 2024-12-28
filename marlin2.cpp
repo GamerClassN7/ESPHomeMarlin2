@@ -135,8 +135,13 @@ namespace esphome {
 
         //Parse Printitme
         if(MarlinOutput.find("echo:Print time: ") == 0) {
-            float d=0, h=0, m=0, s=0;
-            unsigned long current=0, remaining=0;
+            float d=0; 
+            float h=0; 
+            float m=0; 
+            float s=0;
+
+            unsigned long current=0;
+            unsigned long remaining=0;
 
             if (process_print_time_msg(d, h, m, s, current, remaining) != 0)  {
                 if (find_sensor("print_time") != nullptr)
