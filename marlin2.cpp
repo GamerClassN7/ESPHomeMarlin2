@@ -135,22 +135,17 @@ namespace esphome {
 
         //Parse Printitme
         if(MarlinOutput.find("echo:Print time: ") == 0) {
-            float d=0; 
-            float h=0; 
-            float m=0; 
-            float s=0;
+            double current=0;
+            double remaining=0;
 
-            unsigned long current=0;
-            unsigned long remaining=0;
-
-            if (process_print_time_msg(&d, &h, &m, &s, &current, &remaining) != 0)  {
+            if (process_print_time_msg(&current, &remaining) != 0)  {
                 if (find_sensor("print_time") != nullptr)
                     find_sensor("print_time")->publish_state(current);
 
-                if (find_sensor("print_time_remaining") != nullptr)
-                    find_sensor("print_time_remaining")->publish_state(remaining);
+        //         if (find_sensor("print_time_remaining") != nullptr)
+        //             find_sensor("print_time_remaining")->publish_state(remaining);
 
-                ESP_LOGD(TAG, "time=%lu remaining=%lu", current, remaining);
+                ESP_LOGD(TAG, "time=%f remaining=%f", current, remaining);
             }
 
             //reset string for next line
@@ -158,41 +153,41 @@ namespace esphome {
             return;
         }
 
-        //Print Finished
-        if(MarlinOutput.find("Done printing") != std::string::npos) {                
-            //if (find_text_sensor("printer_status") != nullptr)
-                //find_text_sensor("printer_status")->publish_state("FINISHED");
+        // //Print Finished
+        // if(MarlinOutput.find("Done printing") != std::string::npos) {                
+        //     //if (find_text_sensor("printer_status") != nullptr)
+        //         //find_text_sensor("printer_status")->publish_state("FINISHED");
 
-            ESP_LOGD(TAG, "Print Finished");
+        //     ESP_LOGD(TAG, "Print Finished");
 
-            //reset string for next line
-            MarlinOutput="";
-            return;
-        }
+        //     //reset string for next line
+        //     MarlinOutput="";
+        //     return;
+        // }
 
-        //Print Paused
-        if(MarlinOutput.find("Printer halted") != std::string::npos) {                
-            //if (find_text_sensor("printer_status") != nullptr)
-                //find_text_sensor("printer_status")->publish_state("PAUSED");
+        // //Print Paused
+        // if(MarlinOutput.find("Printer halted") != std::string::npos) {                
+        //     //if (find_text_sensor("printer_status") != nullptr)
+        //         //find_text_sensor("printer_status")->publish_state("PAUSED");
 
-            ESP_LOGD(TAG, "Print Finished");
+        //     ESP_LOGD(TAG, "Print Finished");
 
-            //reset string for next line
-            MarlinOutput="";
-            return;
-        }
+        //     //reset string for next line
+        //     MarlinOutput="";
+        //     return;
+        // }
 
-        //Print Stoped
-        if(MarlinOutput.find("Print Aborted") != std::string::npos) {                
-            //if (find_text_sensor("printer_status") != nullptr)
-                //find_text_sensor("printer_status")->publish_state("ABOARTED");
+        // //Print Stoped
+        // if(MarlinOutput.find("Print Aborted") != std::string::npos) {                
+        //     //if (find_text_sensor("printer_status") != nullptr)
+        //         //find_text_sensor("printer_status")->publish_state("ABOARTED");
 
-            ESP_LOGD(TAG, "Print Finished");
+        //     ESP_LOGD(TAG, "Print Finished");
 
-            //reset string for next line
-            MarlinOutput="";
-            return;
-        } 
+        //     //reset string for next line
+        //     MarlinOutput="";
+        //     return;
+        // } 
 
         ESP_LOGD(TAG, "#%s#",MarlinOutput.c_str());        
         MarlinOutput="";
@@ -234,25 +229,26 @@ namespace esphome {
         return ((float) current / (float) total) * 100.0;
     }
 
-    int Marlin2::process_print_time_msg(float* d, float* h, float* m, float* s, unsigned long* current, unsigned long* remaining){
+    int Marlin2::process_print_time_msg(double* current, double* remaining){
         MarlinTime = MarlinOutput.substr(16);
-            
+        float d = 0, h = 0, m = 0, s = 0; 
+        
         ESP_LOGD(TAG,MarlinTime.c_str());
         
-        if (sscanf(MarlinTime.c_str() ,"%fd %fh %fm %fs", d, h, m, s)!=4)  {
+        if (sscanf(MarlinTime.c_str() ,"%fd %fh %fm %fs", &d, &h, &m, &s)!=4)  {
             d=0;
-            if (sscanf(MarlinTime.c_str() ,"%fh %fm %fs", h, m, s)!=3)  {
+            if (sscanf(MarlinTime.c_str() ,"%fh %fm %fs", &h, &m, &s)!=3)  {
                 d=0; h=0;
-                if (sscanf(MarlinTime.c_str() ,"%fm %fs", m, s)!=2)  {
+                if (sscanf(MarlinTime.c_str() ,"%fm %fs", &m, &s)!=2)  {
                     d=0; h=0; m=0;
-                    if (sscanf(MarlinTime.c_str() ,"%fs", s)!=1)  {
+                    if (sscanf(MarlinTime.c_str() ,"%fs", &s)!=1)  {
                         return 0;
                     }
                 }
             }
         }
 
-        *current =  (unsigned long) round(((*d)*24*60*60) + ((*h)*60*60) + ((*m)*60) + (*s));
+        *current = round(((d)*24*60*60) + ((h)*60*60) + ((m)*60) + (s));
         return 1;
     }
 
