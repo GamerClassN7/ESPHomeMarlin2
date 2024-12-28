@@ -22,7 +22,7 @@ class Marlin2 : public PollingComponent, /*public text_sensor::TextSensor,*/ pub
         void process_line();
         int process_temp_msg(float* ext_temperature, float* ext_set_temperature, float* bed_temperature, float* bed_set_temperature);
         float process_progress_msg();
-        int process_print_time_msg(float** d, float* h, float* m, float* s, unsigned long* current, unsigned long* remaining);
+        int process_print_time_msg(float* d, float* h, float* m, float* s, unsigned long* current, unsigned long* remaining);
         
         std::string MarlinOutput;
         std::string MarlinTime;

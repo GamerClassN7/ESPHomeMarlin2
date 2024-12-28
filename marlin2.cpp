@@ -135,10 +135,10 @@ namespace esphome {
 
         //Parse Printitme
         if(MarlinOutput.find("echo:Print time: ") == 0) {
-            float* d=0, h=0, m=0, s=0;
+            float d=0, h=0, m=0, s=0;
             unsigned long current=0, remaining=0;
 
-            if (process_print_time_msg(&d, &h, &m, &s, &current, &remaining) != 0)  {
+            if (process_print_time_msg(d, h, m, s, current, remaining) != 0)  {
                 if (find_sensor("print_time") != nullptr)
                     find_sensor("print_time")->publish_state(current);
 
@@ -229,18 +229,18 @@ namespace esphome {
         return ((float) current / (float) total) * 100.0;
     }
 
-    int Marlin2::process_print_time_msg(float** d, float* h, float* m, float* s, unsigned long* current, unsigned long* remaining){
+    int Marlin2::process_print_time_msg(float* d, float* h, float* m, float* s, unsigned long* current, unsigned long* remaining){
         MarlinTime = MarlinOutput.substr(16);
             
         ESP_LOGD(TAG,MarlinTime.c_str());
         
-        if (sscanf(MarlinTime.c_str() ,"%fd %fh %fm %fs", &d, &h, &m, &s)!=4)  {
+        if (sscanf(MarlinTime.c_str() ,"%fd %fh %fm %fs", d, h, m, s)!=4)  {
             d=0;
-            if (sscanf(MarlinTime.c_str() ,"%fh %fm %fs", &h, &m, &s)!=3)  {
+            if (sscanf(MarlinTime.c_str() ,"%fh %fm %fs", h, m, s)!=3)  {
                 d=0; h=0;
-                if (sscanf(MarlinTime.c_str() ,"%fm %fs", &m, &s)!=2)  {
+                if (sscanf(MarlinTime.c_str() ,"%fm %fs", m, s)!=2)  {
                     d=0; h=0; m=0;
-                    if (sscanf(MarlinTime.c_str() ,"%fs", &s)!=1)  {
+                    if (sscanf(MarlinTime.c_str() ,"%fs", s)!=1)  {
                         MarlinOutput="";
                         return;
                     }
