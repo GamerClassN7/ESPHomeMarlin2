@@ -54,7 +54,7 @@ namespace esphome {
             }
         }
 
-        if(millis() - millisProgress > 15000 )  {
+        if(millis() - millisProgress > 15000 && (progress != 100 progress != 0))  {
             millisProgress = millis();
 
             ESP_LOGD(TAG, "M27");
