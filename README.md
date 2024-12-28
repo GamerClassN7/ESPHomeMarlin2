@@ -1,8 +1,7 @@
-# A component that reads CSV values from the uart.
+# A component that reads Marlin status and messages from the uart.
+![alt text](image.png)
 
 A configured uart is required.
-
-Configure a list of sensors.  The index is required, the rest is the standard sensor config.
 
 Example:
 ```yaml
@@ -21,13 +20,13 @@ sensor:
       name: Progress
 ```
 
-
+Notes:
 * https://github.com/ssieb/esphome_components/tree/master/components/serial_csv
 * https://github.com/esphome/esphome/blob/dev/esphome/components/dht/sensor.py#L34
 * https://github.com/mulcmu/esphome-marlin-uart
 
-
-```
+Full COnfiguration:
+```yaml
 esphome:
   name: vasek-ender-3
   friendly_name: vasek-ender-3
