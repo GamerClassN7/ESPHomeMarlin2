@@ -256,7 +256,7 @@ namespace esphome {
         current = ((d)*24*60*60) + ((h)*60*60) + ((m)*60) + (s);
             
 
-        return 0;
+        return 1;
     }
 
 }  // namespace esphome
