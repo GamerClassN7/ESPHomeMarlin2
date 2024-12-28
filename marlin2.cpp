@@ -252,8 +252,8 @@ namespace esphome {
             }
         }
 
-        current = ((*d)*24*60*60) + ((*h)*60*60) + ((*m)*60) + (*s);
-         return 1;
+        *current =  (unsigned long) round(((*d)*24*60*60) + ((*h)*60*60) + ((*m)*60) + (*s));
+        return 1;
     }
 
 }  // namespace esphome
