@@ -25,6 +25,7 @@ Notes:
 * https://github.com/ssieb/esphome_components/tree/master/components/serial_csv
 * https://github.com/esphome/esphome/blob/dev/esphome/components/dht/sensor.py#L34
 * https://github.com/mulcmu/esphome-marlin-uart
+* https://github.com/oxan/esphome-stream-server/blob/master/components/stream_server/stream_server.cpp
 
 Full COnfiguration:
 ```yaml
