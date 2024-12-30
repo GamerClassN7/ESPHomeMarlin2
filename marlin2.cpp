@@ -112,7 +112,7 @@ namespace esphome {
                             set_printer_state("COOLING");
                         }
                     }
-                    if(bed_set_temperature!=0.0 || ext_set_temperature!=0.0)  {
+                    if(progress = 0 && (bed_set_temperature!=0.0 || ext_set_temperature!=0.0))  {
                         set_printer_state("PREHEATING");
                     }
                 #endif
