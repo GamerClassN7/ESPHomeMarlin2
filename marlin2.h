@@ -44,6 +44,7 @@ class Marlin2 : public PollingComponent, public uart::UARTDevice {
         #endif
 
         void process_line();
+        void set_printer_state(std::string status);
         int process_temp_msg(float* ext_temperature, float* ext_set_temperature, float* bed_temperature, float* bed_set_temperature);
         float process_progress_msg();
         int process_print_time_msg(double* current, double* remaining, float progress);

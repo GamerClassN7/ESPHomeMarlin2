@@ -46,6 +46,8 @@ namespace esphome {
         write_str("\r\n\r\nM155 S10\r\n");
         write_str("\r\n\r\nM117 Hello World!\r\n");
         flush();
+
+        set_printer_state("IDLE");
     }
 
     void Marlin2::update() {
@@ -104,17 +106,14 @@ namespace esphome {
                 #ifdef USE_TEXT_SENSOR
                     if(bed_set_temperature==0.0 && ext_set_temperature==0.0)  {
                         if(ext_temperature < 32.0 && bed_temperature < 32.0){ //TODO define constants for these
-                            if (find_text_sensor("printer_status") != nullptr)
-                                find_text_sensor("printer_status")->publish_state("IDLE");
+                            set_printer_state("IDLE");
                         }         
                         else if(ext_temperature < 150.0 && bed_temperature < 55.0){
-                            if (find_text_sensor("printer_status") != nullptr)
-                                find_text_sensor("printer_status")->publish_state("COOLING");
+                            set_printer_state("COOLING");
                         }
                     }
                     if(bed_set_temperature!=0.0 || ext_set_temperature!=0.0)  {
-                        if (find_text_sensor("printer_status") != nullptr)
-                            find_text_sensor("printer_status")->publish_state("PREHEATING");
+                        set_printer_state("PREHEATING");
                     }
                 #endif
 
@@ -162,16 +161,18 @@ namespace esphome {
             return;
         }
 
+       //Print From SD Card Started
+        if(MarlinOutput.find("File selected") != std::string::npos) {                
+            set_printer_state("PRINTING");
+
+            //reset string for next line
+            MarlinOutput="";
+            return;
+        }
+
         //Print Finished
         if(MarlinOutput.find("Done printing") != std::string::npos) {       
-            #ifdef USE_TEXT_SENSOR         
-            if (find_text_sensor("printer_status") != nullptr)
-                find_text_sensor("printer_status")->publish_state("FINISHED");
-            #endif
-
-            ESP_LOGD(TAG, "Print Finished");
             print_progress = 100;
-            
             #ifdef USE_SENSOR    
                 if (find_sensor("print_progress") != nullptr)
                     find_sensor("print_progress")->publish_state(print_progress);
@@ -179,35 +180,32 @@ namespace esphome {
                 if (find_sensor("print_time_remaining") != nullptr)
                     find_sensor("print_time_remaining")->publish_state(0);
             #endif
+            #ifdef USE_TEXT_SENSOR         
+                set_printer_state("FINISHED");
+            #endif            
 
             //reset string for next line
             MarlinOutput="";
             return;
         }
 
-        // //Print Paused
-        // if(MarlinOutput.find("Printer halted") != std::string::npos) {                
-        //     //if (find_text_sensor("printer_status") != nullptr)
-        //         //find_text_sensor("printer_status")->publish_state("PAUSED");
+        //Print Paused
+        if(MarlinOutput.find("Printer halted") != std::string::npos) {                
+            set_printer_state("PAUSED");
 
-        //     ESP_LOGD(TAG, "Print Finished");
+            //reset string for next line
+            MarlinOutput="";
+            return;
+        }
 
-        //     //reset string for next line
-        //     MarlinOutput="";
-        //     return;
-        // }
+        // //Print Stoped              
+        if(MarlinOutput.find("Print Aborted") != std::string::npos) {                
+            set_printer_state("STOPPED");
 
-        // //Print Stoped
-        // if(MarlinOutput.find("Print Aborted") != std::string::npos) {                
-        //     //if (find_text_sensor("printer_status") != nullptr)
-        //         //find_text_sensor("printer_status")->publish_state("ABOARTED");
-
-        //     ESP_LOGD(TAG, "Print Finished");
-
-        //     //reset string for next line
-        //     MarlinOutput="";
-        //     return;
-        // } 
+            //reset string for next line
+            MarlinOutput="";
+            return;
+        }
 
         ESP_LOGD(TAG, "#%s#",MarlinOutput.c_str());        
         MarlinOutput="";
@@ -217,7 +215,7 @@ namespace esphome {
     int Marlin2::process_temp_msg(float* ext_temperature, float* ext_set_temperature, float* bed_temperature, float* bed_set_temperature) {
         float dc;
 
-        while(MarlinOutput.find(' ') != std::string::npos)
+        while(MarlinOutput.find(" ") != std::string::npos)
             MarlinOutput.erase(MarlinOutput.find(' '), 1);
 
         while(MarlinOutput.find("ok") != std::string::npos)
@@ -275,6 +273,20 @@ namespace esphome {
         }           
     
         return 1;
+    }
+
+    void Marlin2::set_printer_state(std::string status){
+        #ifdef USE_TEXT_SENSOR         
+            // if (!PrinterState.compare(status))
+            //     return; 
+
+            if (find_text_sensor("printer_state") != nullptr){
+                find_text_sensor("printer_state")->publish_state(status);
+            }
+            
+            ESP_LOGD(TAG, "Printer Status %s", status.c_str());
+            // PrinterState = status;
+        #endif
     }
 
 }  // namespace esphome
