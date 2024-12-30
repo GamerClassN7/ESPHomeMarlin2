@@ -6,9 +6,16 @@ A configured uart is required.
 
 Example:
 ```yaml
+
+marlin2:
+  uart_id: uart_bus
+
+switch:
+  - platform: restart
+    name: "Restart Printer"
+
 sensor:
   - platform: marlin2
-    uart_id: uart_bus #optional
     bed_temperature:
       name: Current Bed Temp
     bed_set_temperature:
@@ -19,6 +26,15 @@ sensor:
       name: Set Ext Temp
     print_progress:
       name: Progress
+    print_time:
+      name: "pRINT_time"
+    print_time_remaining:
+      name: "pRINT_time_remaining"
+
+text_sensor:
+  - platform: marlin2
+    printer_state:
+      name: status
 ```
 
 Notes:
@@ -35,19 +51,18 @@ esphome:
 
 external_components:
   - source: components
-
+  
 esp8266:
-  board: d1_mini
+  board: esp01_1m
 
-# Enable logging
 logger:
   baud_rate: 0
   esp8266_store_log_strings_in_flash: False
-
+  
 # Enable Home Assistant API
 api:
   encryption:
-    key: ""
+    key: "="
 
 ota:
   - platform: esphome
@@ -56,18 +71,11 @@ ota:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-
-  manual_ip:
-    static_ip: 192.168.1.252
-    gateway: 192.168.0.1
-    subnet: 255.255.255.0
-
+  
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "Vasek-Ender-3 Fallback Hotspot"
     password: ""
-
-captive_portal:
 
 web_server:
   port: 80
@@ -79,6 +87,9 @@ uart:
   rx_pin: GPIO3
   baud_rate: 115200
 
+marlin2:
+  uart_id: uart_bus
+
 switch:
   - platform: restart
     name: "Restart Printer"
@@ -89,7 +100,6 @@ sensor:
     name: Uptime Sensor
 
   - platform: marlin2
-    uart_id: uart_bus
     bed_temperature:
       name: Current Bed Temp
     bed_set_temperature:
@@ -98,4 +108,15 @@ sensor:
       name: Current Ext Temp
     ext_set_temperature:
       name: Set Ext Temp
+    print_progress:
+      name: Progress
+    print_time:
+      name: "pRINT_time"
+    print_time_remaining:
+      name: "pRINT_time_remaining"
+
+text_sensor:
+  - platform: marlin2
+    printer_state:
+      name: status
 ```
