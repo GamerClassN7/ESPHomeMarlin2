@@ -135,6 +135,7 @@ namespace esphome {
                 ESP_LOGD(TAG, "progress=%.1f", print_progress);
             #endif
 
+            set_printer_state("PRINTING");
             //reset string for next line
             MarlinOutput="";
             return;
