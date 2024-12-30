@@ -113,6 +113,7 @@ namespace esphome {
                         }
                     }
                     if(print_progress == 0.0 && (bed_set_temperature!=0.0 || ext_set_temperature!=0.0))  {
+                        //print_time_offset = print_time save print time ofset to deduct from total value send to hass
                         set_printer_state("PREHEATING");
                     }
                 #endif
