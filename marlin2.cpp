@@ -44,7 +44,7 @@ namespace esphome {
         ESP_LOGD(TAG, "M155 S10");
 
         write_str("\r\n\r\nM155 S10\r\n");
-        write_str("\r\n\r\nM117 Hello World!\r\n");
+        write_str("\r\n\r\nM117 ESP Home Connected!\r\n");
         flush();
 
         set_printer_state("IDLE");
