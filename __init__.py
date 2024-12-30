@@ -19,11 +19,12 @@ from esphome.const import (
 
 CODEOWNERS = ["@jonatanrek"]
 DEPENDENCIES = ['uart']
+CONF_MARLIN2_ID = "marlin2_id"
 
 Marlin2 = cg.esphome_ns.class_('Marlin2', cg.Component)
 
 CONFIG_SCHEMA = cv.All(
-    cv.Schema( {
+    cv.Schema({
             cv.GenerateID(): cv.declare_id(Marlin2),
     })
     .extend(cv.COMPONENT_SCHEMA)

@@ -19,6 +19,7 @@ from esphome.const import (
     DEVICE_CLASS_TEMPERATURE,
     DEVICE_CLASS_DURATION,
 )
+from . import Marlin2
 
 CONF_BED_TEMPERATURE = "bed_temperature"
 CONF_BED_SET_TEMPERATURE = "bed_set_temperature"
@@ -30,13 +31,10 @@ CONF_PRINT_PROGRESS = "print_progress"
 CONF_PRINT_TIME = "print_time"
 CONF_PRINT_TIME_REMAINING = "print_time_remaining"
 
-# CONF_PRINTER_STATUS = "printer_status"
-
-Marlin2 = cg.esphome_ns.class_('Marlin2', cg.Component, sensor.Sensor, uart.UARTDevice)
-
-CONFIG_SCHEMA = uart.UART_DEVICE_SCHEMA.extend(
+CONF_MARLIN = "marlin2"
+CONFIG_SCHEMA =  cv.Schema(
     {
-        cv.GenerateID(): cv.declare_id(Marlin2),
+        cv.GenerateID(CONF_MARLIN): cv.use_id(Marlin2),
         cv.Optional(CONF_BED_TEMPERATURE): sensor.sensor_schema(
             unit_of_measurement=UNIT_CELSIUS,
             accuracy_decimals=1,
@@ -78,20 +76,13 @@ CONFIG_SCHEMA = uart.UART_DEVICE_SCHEMA.extend(
             device_class=DEVICE_CLASS_DURATION,
             state_class=STATE_CLASS_MEASUREMENT,
         ),
-        # cv.Optional(CONF_PRINTER_STATUS): text_sensor.text_sensor_schema(),
     }
-)
+).extend(cv.polling_component_schema("15s"))
 
 async def to_code(config):
-    var = cg.new_Pvariable(config[CONF_ID])
-    await cg.register_component(var, config)
-    await uart.register_uart_device(var, config)
+    server = await cg.get_variable(config[CONF_MARLIN])
+
     for sName in [CONF_BED_TEMPERATURE, CONF_BED_SET_TEMPERATURE, CONF_EXT_TEMPERATURE, CONF_EXT_SET_TEMPERATURE, CONF_PRINT_PROGRESS, CONF_PRINT_TIME, CONF_PRINT_TIME_REMAINING]:
         if sName in config:
             sens = await sensor.new_sensor(config[sName])
-            cg.add(var.add_sensor(sName,sens))    
-
-    # for sName in [CONF_PRINTER_STATUS]:
-    #     if sName in config:
-    #         sens = await sensor.new_text_sensor(config[sName])
-    #         cg.add(var.add_text_sensor(sName,sens))    
+            cg.add(server.add_sensor(sName,sens))

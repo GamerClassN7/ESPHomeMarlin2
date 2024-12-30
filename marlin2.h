@@ -11,11 +11,10 @@
 
 namespace esphome {
 
-class Marlin2 : public esphome::Component, public uart::UARTDevice {
+class Marlin2 : public PollingComponent, public uart::UARTDevice {
     public:
         Marlin2() = default;
-        explicit Marlin2(uart::UARTDevice *uart_device) : uart_device_{uart_device} {}
-        void set_uart_parent(uart::UARTDevice *parent) { this->uart_device_ = parent; }
+
 
         #ifdef USE_SENSOR
             void add_sensor(const std::string& sName, sensor::Sensor *sens);
@@ -31,8 +30,6 @@ class Marlin2 : public esphome::Component, public uart::UARTDevice {
         void update() override;
 
     protected:
-        esphome::uart::UARTDevice *uart_device_{nullptr};
-        
         std::string MarlinOutput;
         std::string MarlinTime;
         std::string PrinterState;
