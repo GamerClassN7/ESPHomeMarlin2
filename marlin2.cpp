@@ -191,14 +191,14 @@ namespace esphome {
             return;
         }
 
-        //Print Paused
-        if(MarlinOutput.find("Printer halted") != std::string::npos) {                
-            set_printer_state("PAUSED");
+        // //Print Paused
+        // if(MarlinOutput.find("Printer halted") != std::string::npos) {                
+        //     set_printer_state("PAUSED");
 
-            //reset string for next line
-            MarlinOutput="";
-            return;
-        }
+        //     //reset string for next line
+        //     MarlinOutput="";
+        //     return;
+        // }
 
         // //Print Stoped              
         if(MarlinOutput.find("Print Aborted") != std::string::npos) {                
@@ -271,7 +271,7 @@ namespace esphome {
         *current = round(((d)*24*60*60) + ((h)*60*60) + ((m)*60) + (s));
 
         if(progress != 0.0 && progress != 100.0) {
-            *remaining = ((100 * *current) / progress);
+            *remaining = (((100 * *current) / progress) -*current);
         }           
     
         return 1;
