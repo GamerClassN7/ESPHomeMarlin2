@@ -31,6 +31,11 @@ CONFIG_SCHEMA = cv.All(
     .extend(uart.UART_DEVICE_SCHEMA),
 )
 
+@automation.register_action("marlin2.set_bed_temperature", SetTemperatureAction, SWITCH_ACTION_SCHEMA)
+async def marlin2_set_bed_temperature_to_code(config, action_id, template_arg, args):
+    paren = await cg.get_variable(config[CONF_ID])
+    return cg.new_Pvariable(action_id, template_arg, paren)
+
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)

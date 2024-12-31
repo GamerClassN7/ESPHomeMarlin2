@@ -24,6 +24,8 @@ class Marlin2 : public PollingComponent, public uart::UARTDevice {
             void add_text_sensor(const std::string& sName, text_sensor::TextSensor *tSens);
             text_sensor::TextSensor* find_text_sensor(std::string key);
         #endif
+        void set_bed_setpoint();
+        void set_extruder_setpoint();
 
         float get_setup_priority() const override { return setup_priority::LATE; }
         void setup() override;

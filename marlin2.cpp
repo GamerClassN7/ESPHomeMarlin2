@@ -48,8 +48,17 @@ namespace esphome {
         flush();
 
         set_printer_state("IDLE");
+
+        register_service(&Marlin2::set_bed_setpoint, "set_bed_setpoint", {"temp_degC"});
+        register_service(&Marlin2::set_extruder_setpoint, "set_extruder_setpoint", {"temp_degC"});
     }
 
+void Marlin2::set_bed_setpoint() {
+
+}
+void Marlin2::set_extruder_setpoint() {
+
+}
     void Marlin2::update() {
         while (available()) {
             char c = read();
@@ -271,7 +280,7 @@ namespace esphome {
         *current = round(((d)*24*60*60) + ((h)*60*60) + ((m)*60) + (s));
 
         if(progress != 0.0 && progress != 100.0) {
-            *remaining = (((100 * *current) / progress) -*current);
+            *remaining = (((100 * *current) / round(progress)) - *current);
         }           
     
         return 1;
