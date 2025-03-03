@@ -15,14 +15,16 @@ from esphome.const import (
     STATE_CLASS_MEASUREMENT, 
     DEVICE_CLASS_TEMPERATURE,
     DEVICE_CLASS_DURATION,
+    CONF_DATA,
 )
+from esphome import pins, automation
 
 CODEOWNERS = ["@jonatanrek"]
 DEPENDENCIES = ['uart']
 CONF_MARLIN2_ID = "marlin2_id"
 
 Marlin2 = cg.esphome_ns.class_('Marlin2', cg.Component)
-Marlin2WriteAction = uart_ns.class_("Marlin2WriteAction", automation.Action)
+Marlin2WriteAction = Marlin2.class_("Marlin2WriteAction", automation.Action)
 
 CONFIG_SCHEMA = cv.All(
     cv.Schema({
@@ -32,18 +34,21 @@ CONFIG_SCHEMA = cv.All(
     .extend(uart.UART_DEVICE_SCHEMA),
 )
 
-MARLIN2_ACTION_SCHEMA = maybe_simple_id(
-    {
-        cv.Required(CONF_ID): cv.use_id(Marlin2),
-    }
-)
+def validate_raw_data(value):
+    if isinstance(value, str):
+        return value.encode("utf-8")
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list):
+        return cv.Schema([cv.hex_uint8_t])(value)
+    raise cv.Invalid("data must either be a string wrapped in quotes or a list of bytes")
 
 @automation.register_action(
     "marlin2.write",
     Marlin2WriteAction,
     cv.maybe_simple_value(
         {
-            cv.GenerateID(): cv.use_id(UARTComponent),
+            cv.GenerateID(): cv.declare_id(Marlin2),
             cv.Required(CONF_DATA): cv.templatable(validate_raw_data),
         },
         key=CONF_DATA,
