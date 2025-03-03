@@ -7,7 +7,7 @@
 
 namespace esphome {
 
-template<typename... Ts> class Marlin2WriteAction : public Action<Ts...>, public Parented<UARTComponent> {
+template<typename... Ts> class Marlin2WriteAction : public Action<Ts...>, public Parented<Marlin2> {
     public:
         void set_data_template(std::function<std::vector<uint8_t>(Ts...)> func) {
             this->data_func_ = func;
