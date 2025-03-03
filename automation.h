@@ -1,6 +1,6 @@
 #pragma once
 
-#include "uart.h"
+#include "marlin2.h"
 #include "esphome/core/automation.h"
 
 #include <vector>
