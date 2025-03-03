@@ -22,6 +22,7 @@ DEPENDENCIES = ['uart']
 CONF_MARLIN2_ID = "marlin2_id"
 
 Marlin2 = cg.esphome_ns.class_('Marlin2', cg.Component)
+Marlin2WriteAction = uart_ns.class_("Marlin2WriteAction", automation.Action)
 
 CONFIG_SCHEMA = cv.All(
     cv.Schema({
@@ -31,10 +32,23 @@ CONFIG_SCHEMA = cv.All(
     .extend(uart.UART_DEVICE_SCHEMA),
 )
 
-@automation.register_action("marlin2.set_bed_temperature", SetTemperatureAction, SWITCH_ACTION_SCHEMA)
-async def marlin2_set_bed_temperature_to_code(config, action_id, template_arg, args):
-    paren = await cg.get_variable(config[CONF_ID])
-    return cg.new_Pvariable(action_id, template_arg, paren)
+MARLIN2_ACTION_SCHEMA = maybe_simple_id(
+    {
+        cv.Required(CONF_ID): cv.use_id(Marlin2),
+    }
+)
+
+@automation.register_action(
+    "marlin2.write",
+    Marlin2WriteAction,
+    cv.maybe_simple_value(
+        {
+            cv.GenerateID(): cv.use_id(UARTComponent),
+            cv.Required(CONF_DATA): cv.templatable(validate_raw_data),
+        },
+        key=CONF_DATA,
+    ),
+)
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
