@@ -1,7 +1,9 @@
 #ESPHome - Marlin2
 ### A component that reads Marlin status and messages from the uart.
-![alt text](image.png)
-![Home Assistant Dashboard Example](image-1.png)
+![alt text](images/image.png)
+
+![Home Assistant Dashboard Example](images/image-1.png)
+
 A configured uart is required.
 
 Example:
