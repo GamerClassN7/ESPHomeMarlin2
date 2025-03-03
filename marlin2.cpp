@@ -48,9 +48,6 @@ namespace esphome {
         flush();
 
         set_printer_state("IDLE");
-
-        register_service(&Marlin2::set_bed_setpoint, "set_bed_setpoint", {"temp_degC"});
-        register_service(&Marlin2::set_extruder_setpoint, "set_extruder_setpoint", {"temp_degC"});
     }
 
 void Marlin2::set_bed_setpoint() {
