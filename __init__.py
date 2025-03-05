@@ -16,8 +16,10 @@ from esphome.const import (
     DEVICE_CLASS_TEMPERATURE,
     DEVICE_CLASS_DURATION,
     CONF_DATA,
+    CONF_VALUE
 )
 from esphome import pins, automation
+from esphome.core import CORE, coroutine_with_priority
 
 CODEOWNERS = ["@jonatanrek"]
 DEPENDENCIES = ['uart']
@@ -43,19 +45,26 @@ def validate_raw_data(value):
         return cv.Schema([cv.hex_uint8_t])(value)
     raise cv.Invalid("data must either be a string wrapped in quotes or a list of bytes")
 
-@automation.register_action(
-    "marlin2.write",
-    Marlin2WriteAction,
-    cv.maybe_simple_value(
-        {
-            cv.GenerateID(): cv.declare_id(Marlin2),
-            cv.Required(CONF_DATA): cv.templatable(validate_raw_data),
-        },
-        key=CONF_DATA,
-    ),
-)
-
+@coroutine_with_priority(100.0)
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
+
+OPERATION_BASE_SCHEMA = cv.Schema({
+    cv.GenerateID(): cv.use_id(Marlin2),
+    cv.Required(CONF_VALUE): cv.templatable(cv.string_strict),
+})
+
+@automation.register_action(
+    "marlin2.write",
+    Marlin2WriteAction,
+    OPERATION_BASE_SCHEMA,
+)
+
+async def marlin2_write_to_code(config, action_id, template_arg, args):
+    paren = await cg.get_variable(config[CONF_ID])
+    var = cg.new_Pvariable(action_id, template_arg, paren)
+    template_ = await cg.templatable(config[CONF_VALUE], args, cg.std_string)
+    cg.add(var.set_value(template_))
+    return var

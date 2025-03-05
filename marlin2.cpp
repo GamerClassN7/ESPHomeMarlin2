@@ -50,12 +50,12 @@ namespace esphome {
         set_printer_state("IDLE");
     }
 
-void Marlin2::set_bed_setpoint() {
+    void Marlin2::write(std::string gcode) {
+        ESP_LOGD(TAG, "->GCODE: %s", gcode.c_str());
+        write_str(gcode.c_str());
+        flush();
+    }
 
-}
-void Marlin2::set_extruder_setpoint() {
-
-}
     void Marlin2::update() {
         while (available()) {
             char c = read();

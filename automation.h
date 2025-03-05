@@ -1,22 +1,20 @@
 #pragma once
 
-#include "marlin2.h"
 #include "esphome/core/automation.h"
-
-#include <vector>
+#include "esphome/core/component.h"
+#include "marlin2.h"
 
 namespace esphome {
 
-template<typename... Ts> class Marlin2WriteGCodeAction : public Action<Ts...> {
+template<typename... Ts> class Marlin2WriteAction : public Action<Ts...> {
     public:
-        explicit Marlin2WriteGCodeAction(Marlin2 *marlin2) : marlin2_(marlin2) {}
-        TEMPLATABLE_VALUE(std::string, gcode)
+        explicit Marlin2WriteAction(Marlin2 *marlin2) : marlin2_(marlin2) {}
+        TEMPLATABLE_VALUE(std::string, value)
 
         void play(Ts... x) override {
-            this->marlin2_->write_str("\r\n\r\nM117 Action Called!\r\n");;
+            this->marlin2_->write("M117 Action Called!");
         }
-    
-    
+
     protected:
         Marlin2 *marlin2_;
 };
