@@ -7,30 +7,18 @@
 
 namespace esphome {
 
-template<typename... Ts> class Marlin2WriteAction : public Action<Ts...>, public Parented<Marlin2> {
+template<typename... Ts> class Marlin2WriteGCodeAction : public Action<Ts...> {
     public:
-        void set_data_template(std::function<std::vector<uint8_t>(Ts...)> func) {
-            this->data_func_ = func;
-            this->static_ = false;
-        }
-        void set_data_static(const std::vector<uint8_t> &data) {  
-            this->data_static_ = data;
-            this->static_ = true;
-        }
+        explicit Marlin2WriteGCodeAction(Marlin2 *marlin2) : marlin2_(marlin2) {}
+        TEMPLATABLE_VALUE(std::string, gcode)
 
         void play(Ts... x) override {
-            if (this->static_) {
-                this->parent_->write_array(this->data_static_);
-            } else {
-                auto val = this->data_func_(x...);
-                this->parent_->write_array(val);
-            }
+            this->marlin2_->write_str("\r\n\r\nM117 Action Called!\r\n");;
         }
-
+    
+    
     protected:
-        bool static_{false};
-        std::function<std::vector<uint8_t>(Ts...)> data_func_{};
-        std::vector<uint8_t> data_static_{};
+        Marlin2 *marlin2_;
 };
 
 }  // namespace esphome

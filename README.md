@@ -8,7 +8,16 @@ A configured uart is required.
 
 Example:
 ```yaml
-
+api:
+  actions:
+    - action: 'set_bed_temperature'
+      variables:
+        temperature: int
+      then:
+        - marlin2.write_g_code
+            gcode: !lampda "return temperature"
+  ...
+  
 marlin2:
   uart_id: uart_bus
 
