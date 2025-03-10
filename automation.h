@@ -6,13 +6,13 @@
 
 namespace esphome {
 
-template<typename... Ts> class Marlin2WriteAction : public Action<Ts...> {
+template<typename... Ts> class WriteAction : public Action<Ts...> {
     public:
-        explicit Marlin2WriteAction(Marlin2 *marlin2) : marlin2_(marlin2) {}
+        explicit WriteAction(Marlin2 *marlin2) : marlin2_(marlin2) {}
         TEMPLATABLE_VALUE(std::string, value)
 
         void play(Ts... x) override {
-            this->marlin2_->write("M117 Action Called!");
+            this->marlin2_->write(this->value_.value(x...));
         }
 
     protected:

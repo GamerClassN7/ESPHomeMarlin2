@@ -26,7 +26,7 @@ DEPENDENCIES = ['uart']
 CONF_MARLIN2_ID = "marlin2_id"
 
 Marlin2 = cg.esphome_ns.class_('Marlin2', cg.Component)
-Marlin2WriteAction = Marlin2.class_("Marlin2WriteAction", automation.Action)
+WriteAction = cg.esphome_ns.class_("WriteAction", automation.Action)
 
 CONFIG_SCHEMA = cv.All(
     cv.Schema({
@@ -58,7 +58,7 @@ OPERATION_BASE_SCHEMA = cv.Schema({
 
 @automation.register_action(
     "marlin2.write",
-    Marlin2WriteAction,
+    WriteAction,
     OPERATION_BASE_SCHEMA,
 )
 

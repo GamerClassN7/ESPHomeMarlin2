@@ -52,7 +52,8 @@ namespace esphome {
 
     void Marlin2::write(std::string gcode) {
         ESP_LOGD(TAG, "->GCODE: %s", gcode.c_str());
-        write_str(gcode.c_str());
+        
+        write_str((std::string("\r\n\r\n") + gcode + std::string("\r\n")).c_str());
         flush();
     }
 
@@ -77,6 +78,8 @@ namespace esphome {
     }
 
     void  Marlin2::process_line() {
+        ESP_LOGD(TAG, "#%s#",MarlinOutput.c_str());     
+
         if(MarlinOutput.size() < 3) {
             MarlinOutput="";
             return;

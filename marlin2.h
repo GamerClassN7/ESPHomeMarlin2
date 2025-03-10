@@ -37,7 +37,6 @@ class Marlin2 : public PollingComponent, public uart::UARTDevice {
 
         float print_progress = 0;
         double print_time_offset = 0;
-
         
         #ifdef USE_SENSOR
             std::vector<std::pair<std::string, sensor::Sensor *>> sensors;
