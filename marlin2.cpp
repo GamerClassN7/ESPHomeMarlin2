@@ -33,10 +33,12 @@ namespace esphome {
         }
     #endif
 
-
     void Marlin2::setup() {
         MarlinOutput.reserve(256);
         MarlinOutput = "";
+
+        MarlinResponseOutput.reserve(256);
+        MarlinResponseOutput = "";
 
         MarlinTime.reserve(32);
         PrinterState.reserve(32);
@@ -52,7 +54,6 @@ namespace esphome {
 
     void Marlin2::write(std::string gcode) {
         ESP_LOGD(TAG, "->GCODE: %s", gcode.c_str());
-        
         write_str((std::string("\r\n\r\n") + gcode + std::string("\r\n")).c_str());
         flush();
     }
@@ -61,6 +62,7 @@ namespace esphome {
         while (available()) {
             char c = read();
             if( c == '\n' || c == '\r' ) {
+                ESP_LOGD(TAG, "#%s#",MarlinOutput.c_str());    
                 process_line();
             } else {
                 MarlinOutput += c;
@@ -78,8 +80,6 @@ namespace esphome {
     }
 
     void  Marlin2::process_line() {
-        ESP_LOGD(TAG, "#%s#",MarlinOutput.c_str());     
-
         if(MarlinOutput.size() < 3) {
             MarlinOutput="";
             return;
@@ -298,6 +298,36 @@ namespace esphome {
             ESP_LOGD(TAG, "Printer Status %s", status.c_str());
             // PrinterState = status;
         #endif
+    }
+
+    std::string Marlin2::to_dos_name(std::string filename) {
+        std::string shortName;
+        size_t dotPos = filename.find_last_of('.');
+
+        // Extract name and extension
+        std::string namePart = (dotPos != std::string::npos) ? filename.substr(0, dotPos) : filename;
+        std::string extPart = (dotPos != std::string::npos) ? filename.substr(dotPos + 1) : "";
+
+        // Truncate name to 6 characters + ~1
+        if (namePart.length() > 6) {
+            namePart = namePart.substr(0, 6) + "~1";
+        }
+
+        // Truncate extension to 3 characters
+        if (extPart.length() > 3) {
+            extPart = extPart.substr(0, 3);
+        }
+
+        // Construct 8.3 filename
+        shortName = namePart;
+        if (!extPart.empty()) {
+            shortName += "." + extPart;
+        }
+
+        // Convert to uppercase (DOS filenames are case-insensitive, usually stored in uppercase)
+        std::transform(shortName.begin(), shortName.end(), shortName.begin(), ::toupper);
+
+        return shortName;
     }
 
 }  // namespace esphome

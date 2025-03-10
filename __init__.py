@@ -27,6 +27,7 @@ CONF_MARLIN2_ID = "marlin2_id"
 
 Marlin2 = cg.esphome_ns.class_('Marlin2', cg.Component)
 WriteAction = cg.esphome_ns.class_("WriteAction", automation.Action)
+PrintFileAction = cg.esphome_ns.class_("PrintFileAction", automation.Action)
 
 CONFIG_SCHEMA = cv.All(
     cv.Schema({
@@ -56,6 +57,11 @@ OPERATION_BASE_SCHEMA = cv.Schema({
     cv.Required(CONF_VALUE): cv.templatable(cv.string_strict),
 })
 
+OPERATION_BASE_SCHEMA_2 = cv.Schema({
+    cv.GenerateID(): cv.use_id(Marlin2),
+    cv.Required(CONF_VALUE): cv.templatable(cv.string_strict),
+})
+
 @automation.register_action(
     "marlin2.write",
     WriteAction,
@@ -63,6 +69,18 @@ OPERATION_BASE_SCHEMA = cv.Schema({
 )
 
 async def marlin2_write_to_code(config, action_id, template_arg, args):
+    paren = await cg.get_variable(config[CONF_ID])
+    var = cg.new_Pvariable(action_id, template_arg, paren)
+    template_ = await cg.templatable(config[CONF_VALUE], args, cg.std_string)
+    cg.add(var.set_value(template_))
+    return var
+
+@automation.register_action(
+    "marlin2.print_file",
+    PrintFileAction,
+    OPERATION_BASE_SCHEMA_2,
+)
+async def marlin2_print_file_to_code(config, action_id, template_arg, args):
     paren = await cg.get_variable(config[CONF_ID])
     var = cg.new_Pvariable(action_id, template_arg, paren)
     template_ = await cg.templatable(config[CONF_VALUE], args, cg.std_string)

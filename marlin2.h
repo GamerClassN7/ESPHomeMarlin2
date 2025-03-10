@@ -25,6 +25,7 @@ class Marlin2 : public PollingComponent, public uart::UARTDevice {
             text_sensor::TextSensor* find_text_sensor(std::string key);
         #endif
         void write(std::string status);
+        std::string to_dos_name(std::string file_name);
 
         float get_setup_priority() const override { return setup_priority::LATE; }
         void setup() override;
@@ -32,6 +33,7 @@ class Marlin2 : public PollingComponent, public uart::UARTDevice {
 
     protected:
         std::string MarlinOutput;
+        std::string MarlinResponseOutput;
         std::string MarlinTime;
         std::string PrinterState;
 
@@ -50,7 +52,7 @@ class Marlin2 : public PollingComponent, public uart::UARTDevice {
         int process_temp_msg(float* ext_temperature, float* ext_set_temperature, float* bed_temperature, float* bed_set_temperature);
         float process_progress_msg();
         int process_print_time_msg(double* current, double* remaining, float progress);
-    
+
     private:
         unsigned long millisProgress=0;
 };
